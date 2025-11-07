@@ -82,7 +82,7 @@ BarcodeWidget::BarcodeWidget(QWidget* parent)
 
 void BarcodeWidget::onBrowseFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Select File", "", "All Files (*)");
+    QString fileName = QFileDialog::getOpenFileName(this, "Select File", "", "RFA Files (*.rfa);;All Files (*)");
     if (!fileName.isEmpty())
         filePathEdit->setText(fileName);
 }
