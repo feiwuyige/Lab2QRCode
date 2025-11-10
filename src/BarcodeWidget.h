@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QImage>
 #include <opencv2/opencv.hpp>
+#include <QScrollArea>
 
 class QLineEdit;
 class QPushButton;
@@ -27,6 +28,13 @@ public:
     explicit BarcodeWidget(QWidget* parent = nullptr);
 
 private slots:
+    /**
+     * @brief 更新按钮状态，是否可点击
+     *
+     * @param filePath 当前选择的文件路径。
+     */
+    void updateButtonStates(const QString& filePath);
+
     /**
      * @brief 打开文件浏览器并选择一个文件，在文本框显示选择的文件路径。
      */
@@ -62,8 +70,9 @@ private:
     QPushButton* generateButton;   /**< 生成二维码按钮 */
     QPushButton* decodeToChemFile; /**< 解码并保存为化验文件按钮 */
     QPushButton* saveButton;       /**< 保存二维码图片按钮 */
-    QLabel* barcodeLabel;          /**< 用于显示生成的二维码图像的标签 */
+    QLabel* barcodeLabel;          /**< 用于显示生成的二维码图像或解码文本的标签 */
     QImage lastImage;              /**< 存储最后生成的二维码图像 */
-
+    QByteArray lastDecodedData;    /**< 保存解码后的数据 */
+    QScrollArea* scrollArea;       /**< 滚动区域 */
     
 };

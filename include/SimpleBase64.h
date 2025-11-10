@@ -43,7 +43,7 @@ namespace SimpleBase64 {
         for (unsigned char c : str) {
             if (T[c] == -1) {
                 if (c == '=') break;  // padding
-                else continue;         // skip invalid chars
+                else continue;        // skip invalid chars
             }
             val = (val << 6) + T[c];
             valb += 6;
