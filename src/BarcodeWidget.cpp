@@ -137,6 +137,13 @@ BarcodeWidget::BarcodeWidget(QWidget* parent)
 
     mainLayout->addLayout(sizeLayout);
 
+    subscriber_ = std::make_unique<MqttSubscriber>("47.100.34.19", 1883, "boost_simple_subscriber",
+        [this](const std::string& topic, const std::string& payload){
+            emit mqttMessageReceived(QString::fromStdString(topic),
+                QString::fromStdString(payload));
+        });
+    subscriber_->subscribe("test/topic");
+
     // 连接信号与槽
     connect(browseButton, &QPushButton::clicked, this, &BarcodeWidget::onBrowseFile);
     connect(generateButton, &QPushButton::clicked, this, &BarcodeWidget::onGenerateClicked);
@@ -149,6 +156,10 @@ BarcodeWidget::BarcodeWidget(QWidget* parent)
         // 设置当前选择的条码格式
         currentBarcodeFormat = stringToBarcodeFormat(barcodeFormats[index]);
         //QMessageBox::information(this, "", barcodeFormatToString(currentBarcodeFormat));
+    });
+    connect(this, &BarcodeWidget::mqttMessageReceived, this, [this](const QString& topic, const QString& payload) {
+        QMessageBox::information(this, "订阅消息",
+            QString("主题: %1\n内容: %2").arg(topic, payload));
     });
 }
 

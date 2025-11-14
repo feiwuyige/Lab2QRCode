@@ -4,6 +4,7 @@
 #include <QImage>
 #include <opencv2/opencv.hpp>
 #include <ZXing/BarcodeFormat.h>
+#include "mqtt/mqtt_client.h"
 
 class QLineEdit;
 class QPushButton;
@@ -54,6 +55,9 @@ private:
         "DXFilmEdge",       // ZXing::BarcodeFormat::DXFilmEdge
         "DataBarLimited"    // ZXing::BarcodeFormat::DataBarLimited
     };
+
+signals:
+    void mqttMessageReceived(const QString& topic, const QString& payload);
 
 private slots:
     /**
@@ -119,4 +123,5 @@ private:
     ZXing::BarcodeFormat currentBarcodeFormat = ZXing::BarcodeFormat::QRCode;  /**< 当前选择的条码格式  */
     QLineEdit* widthInput;
     QLineEdit* heightInput;
+    std::unique_ptr<MqttSubscriber> subscriber_;  /**< MQTT 订阅者实例  */
 };

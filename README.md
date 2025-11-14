@@ -19,6 +19,8 @@
 - **[`zxing-cpp`](https://github.com/zxing-cpp/zxing-cpp)** - 条码处理核心库
 - **`OpenCV4`** - 图像处理
 - **`Qt5`** - 图形界面
+- [**`mqtt5`**](https://github.com/boostorg/mqtt5) - 消息订阅
+- [**`Boost.Asio`**](https://www.boost.org/doc/libs/master/doc/html/boost_asio.html)
 
 使用 Visual Studio 17 工具链构建：
 
