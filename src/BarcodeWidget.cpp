@@ -7,6 +7,7 @@
 #include <QPixmap>
 #include <QMessageBox>
 #include <QFont>
+#include <QScrollArea>
 #include <QCheckBox>
 #include <QComboBox>
 #include <opencv2/opencv.hpp>
@@ -115,6 +116,27 @@ BarcodeWidget::BarcodeWidget(QWidget* parent)
     comboBoxLayout->addWidget(formatComboBox);
     mainLayout->addLayout(comboBoxLayout);
 
+    auto* sizeLayout = new QHBoxLayout();
+
+    QLabel* widthLabel = new QLabel("宽度:", this);
+    widthInput = new QLineEdit(this);
+    widthInput->setText("300");  // 默认宽度
+    widthInput->setFont(QFont("Arial", 12));
+    widthInput->setStyleSheet("QLineEdit { border: 1px solid #ccc; border-radius: 5px; padding: 5px; background-color: #f9f9f9; }");
+
+    QLabel* heightLabel = new QLabel("高度:", this);
+    heightInput = new QLineEdit(this);
+    heightInput->setText("300");  // 默认高度
+    heightInput->setFont(QFont("Arial", 12));
+    heightInput->setStyleSheet("QLineEdit { border: 1px solid #ccc; border-radius: 5px; padding: 5px; background-color: #f9f9f9; }");
+
+    sizeLayout->addWidget(widthLabel);
+    sizeLayout->addWidget(widthInput);
+    sizeLayout->addWidget(heightLabel);
+    sizeLayout->addWidget(heightInput);
+
+    mainLayout->addLayout(sizeLayout);
+
     // 连接信号与槽
     connect(browseButton, &QPushButton::clicked, this, &BarcodeWidget::onBrowseFile);
     connect(generateButton, &QPushButton::clicked, this, &BarcodeWidget::onGenerateClicked);
@@ -207,7 +229,8 @@ void BarcodeWidget::onGenerateClicked()
         ZXing::MultiFormatWriter writer(currentBarcodeFormat);
         writer.setMargin(1);
 
-        const auto bitMatrix = writer.encode(text, 300, 300);
+        // 界面用户输入
+        const auto bitMatrix = writer.encode(text, widthInput->text().toInt(), heightInput->text().toInt());
         const int width = bitMatrix.width();
         const int height = bitMatrix.height();
         cv::Mat img(height, width, CV_8UC1);
@@ -219,11 +242,13 @@ void BarcodeWidget::onGenerateClicked()
         lastImage = MatToQImage(img);
         barcodeLabel->clear();
         barcodeLabel->setAlignment(Qt::AlignCenter); // 重新设置居中
-        barcodeLabel->setPixmap(QPixmap::fromImage(lastImage).scaled(300, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        int genW = widthInput->text().toInt();
+        int genH = heightInput->text().toInt();
+        barcodeLabel->setPixmap(QPixmap::fromImage(lastImage).scaled(genW, genH, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         saveButton->setEnabled(true);
     }
     catch (const std::exception& e) {
-        QMessageBox::critical(this, "Error", QString("Failed to generate QRCode:\n%1").arg(e.what()));
+        QMessageBox::critical(this, "Error", QString("Failed to generate %1:\n%2").arg(barcodeFormatToString(currentBarcodeFormat),e.what()));
     }
 }
 

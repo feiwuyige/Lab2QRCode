@@ -4,11 +4,11 @@
 #include <QImage>
 #include <opencv2/opencv.hpp>
 #include <ZXing/BarcodeFormat.h>
-#include <QScrollArea>
 
 class QLineEdit;
 class QPushButton;
 class QLabel;
+class QScrollArea;
 class QCheckBox;
 class QComboBox;
 
@@ -83,17 +83,26 @@ private slots:
      */
     void onSaveClicked();
 
+    /**
+     * @brief 将条码格式枚举转换为字符串表示。
+     *
+     * @param format 条码格式枚举值。
+     * @return 对应的字符串表示。
+     */
     static QString barcodeFormatToString(ZXing::BarcodeFormat format);
+
+    /**
+     * @brief 将字符串表示转换为条码格式枚举。
+     *
+     * @param formatStr 条码格式的字符串表示。
+     * @return 对应的条码格式枚举值。
+     */
     static ZXing::BarcodeFormat stringToBarcodeFormat(const QString& formatStr);
 
 private:
 
     /**
      * @brief 将 OpenCV 中的 Mat 对象转换为 QImage 格式。
-     *
-     * @param mat 输入的 OpenCV 图像（Mat 类型）。
-     * @return 转换后的 QImage 图像。
-     *
      */
     QImage MatToQImage(const cv::Mat& mat) const;
 
@@ -108,4 +117,6 @@ private:
     QCheckBox* base64CheckBox;     /**< 是否使用base64 */
     QComboBox* formatComboBox;     /**< 条码格式选择框 */
     ZXing::BarcodeFormat currentBarcodeFormat = ZXing::BarcodeFormat::QRCode;  /**< 当前选择的条码格式  */
+    QLineEdit* widthInput;
+    QLineEdit* heightInput;
 };
