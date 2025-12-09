@@ -92,6 +92,10 @@ CameraWidget::CameraWidget(QWidget* parent)
 
     cameraMenu = new QMenu("摄像头", this);
     menuBar->addMenu(cameraMenu);
+
+    cameraConfigMenu = new QMenu("显示设置", this);
+    menuBar->addMenu(cameraConfigMenu);
+
     mainLayout->setMenuBar(menuBar); // 将菜单栏加到窗口布局
 
     // 菜单栏
@@ -268,10 +272,20 @@ void CameraWidget::startCamera(int camIndex)
             }, Qt::QueuedConnection);
             return;
         }
-        const auto config = CameraConfig::selectBestCameraConfig(CameraConfig::getSupportedCameraConfigs(camIndex));
+        // 根据打开的摄像头加载摄像头配置
+        std::vector<CameraConfig> configs = CameraConfig::getSupportedCameraConfigs(camIndex);
+        
+        // 回到主线程，创建菜单 UI
+        QMetaObject::invokeMethod(this,
+            [this, configs]() { loadCameraConfigs(configs); },
+            Qt::QueuedConnection);
+        // 默认选择最佳配置
+        const auto config = CameraConfig::selectBestCameraConfig(configs);
         spdlog::info("Selected Camera Config - Resolution: {}x{}, FPS: {}, Pixel Format: {}",
             config.width, config.height, config.fps, config.pixelFormat.toStdString());
-
+        //勾选对应的配置，在主线程操作 UI
+        QMetaObject::invokeMethod(this, [this, config]() {selectBestCameraConfigUI(config);},
+            Qt::QueuedConnection);
         cap->set(cv::CAP_PROP_FRAME_WIDTH, config.width);
         cap->set(cv::CAP_PROP_FRAME_HEIGHT, config.height);
         cap->set(cv::CAP_PROP_FPS, config.fps);
@@ -390,5 +404,73 @@ void CameraWidget::processFrame(cv::Mat& frame, FrameResult& out) const
         out.type = QString::fromStdString(ZXing::ToString(bc.format()));
         out.content = QString::fromStdString(bc.text());
         DrawBarcode(frame, bc);
+    }
+}
+
+void CameraWidget::onCameraConfigSelected(CameraConfig config) {
+    if (!capture) {
+        spdlog::error("Failed to open camera {}", currentCameraIndex);
+        return;
+    }
+    spdlog::info("Selected Camera Config - Resolution: {}x{}, FPS: {}, Pixel Format: {}",
+        config.width, config.height, config.fps, config.pixelFormat.toStdString());
+    
+    bool okWidth = capture->set(cv::CAP_PROP_FRAME_WIDTH, config.width);
+    bool okHeight = capture->set(cv::CAP_PROP_FRAME_HEIGHT, config.height);
+    bool okFps = capture->set(cv::CAP_PROP_FPS, config.fps);
+
+    spdlog::info("Set width={}, ok={}", config.width, okWidth);
+    spdlog::info("Set height={}, ok={}", config.height, okHeight);
+    spdlog::info("Set fps={}, ok={}", config.fps, okFps);
+
+}
+
+
+void CameraWidget::loadCameraConfigs(const std::vector<CameraConfig>& configs) {
+    // 清空菜单
+    cameraConfigMenu->clear();
+
+    // 清理旧的 QActionGroup
+    if (cameraActionGroup) {
+        delete cameraActionGroup;
+        cameraActionGroup = nullptr;
+    }
+    // 加入摄像头配置 actions
+    cameraActionGroup = new QActionGroup(this);
+    cameraActionGroup->setExclusive(true);  // 互斥
+
+    for (size_t i = 0;i < configs.size(); ++i) {
+        QString configText = static_cast<QString>(configs[i]);
+        QAction* action = new QAction(configText, this);
+        action->setCheckable(true);
+        action->setData((int)i);
+
+        cameraActionGroup->addAction(action);
+        cameraConfigMenu->addAction(action);
+
+        auto config = configs[i];
+        connect(action, &QAction::triggered, this, [this, action, config]() {
+            onCameraConfigSelected(config);
+            action->setChecked(true);
+        });
+    }
+}
+
+void CameraWidget::selectBestCameraConfigUI(const CameraConfig& bestConfig)
+{
+    if (!cameraActionGroup) return;
+
+    // 遍历 group 中的所有 action
+    QString bestConfigText = static_cast<QString>(bestConfig);
+    for (QAction* action : cameraActionGroup->actions())
+    {
+        QString text = action->text();
+
+        if(text == bestConfigText)
+        {
+            spdlog::info("HAHHAHAHA");
+            action->setChecked(true); // 勾选
+            break; // 找到后就退出
+        }
     }
 }

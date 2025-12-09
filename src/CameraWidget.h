@@ -11,6 +11,7 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <ZXing/BarcodeFormat.h>
+#include <qactiongroup.h>
 #include "commondef.h"
 #include "FrameWidget.h"
 #include "CameraConfig.h"
@@ -108,6 +109,30 @@ private:
      */
     void processFrame(cv::Mat& frame, FrameResult& out) const;
 
+    /**
+     * @brief 摄像头配置切换处理函数
+     *
+     * 当用户选择摄像头不同的配置时调用此函数进行切换
+     * @param config 新选择的摄像头配置
+     */
+    void onCameraConfigSelected(CameraConfig config);
+    
+    /**
+     * @brief 摄像头配置 UI 加载函数
+     *
+     * 根据新的配置文件重新绘制 UI 下拉菜单
+     * @param config 新选择的配置
+     */
+    void loadCameraConfigs(const std::vector<CameraConfig>& configs);
+
+    /**
+     * @brief UI 勾选最佳配置函数
+     *
+     * 在配置菜单勾选最佳配置
+     * @param bestConfig 最佳配置
+     */
+    void selectBestCameraConfigUI(const CameraConfig& bestConfig);
+
 private:
     cv::VideoCapture* capture = nullptr;                                    /**< 摄像头捕获对象，用于获取视频帧 */
     std::atomic_bool running{false};                                        /**< 控制摄像头捕获循环是否运行的原子布尔值 */
@@ -122,6 +147,8 @@ private:
     QStatusBar* statusBar = nullptr;                                        /**< 状态栏组件 */
     QMenuBar* menuBar;                                                      /**< 菜单栏组件 */
     QMenu* cameraMenu;                                                      /**< 摄像头选择菜单 */
+    QMenu* cameraConfigMenu;                                                /**< 摄像头配置选择菜单 */
+    QActionGroup* cameraActionGroup = nullptr;                              /**< 摄像头配置ActionGroup */
     int currentCameraIndex = 0;                                             /**< 当前选择的摄像头索引 */
     QComboBox* barcodeTypeCombo = nullptr;                                  /**< 条码类型选择组合框 */
     ZXing::BarcodeFormat currentBarcodeFormat = ZXing::BarcodeFormat::None; /**< 当前选择的条码格式 */
