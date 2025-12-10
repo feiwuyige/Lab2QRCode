@@ -121,7 +121,7 @@ private:
      * @brief 摄像头配置 UI 加载函数
      *
      * 根据新的配置文件重新绘制 UI 下拉菜单
-     * @param config 新选择的配置
+     * @param configs 新选择的配置
      */
     void loadCameraConfigs(const std::vector<CameraConfig>& configs);
 
@@ -131,7 +131,7 @@ private:
      * 在配置菜单勾选最佳配置
      * @param bestConfig 最佳配置
      */
-    void selectBestCameraConfigUI(const CameraConfig& bestConfig);
+    void selectBestCameraConfigUI(const CameraConfig& bestConfig) const;
 
 private:
     cv::VideoCapture* capture = nullptr;                                    /**< 摄像头捕获对象，用于获取视频帧 */

@@ -423,6 +423,11 @@ void CameraWidget::onCameraConfigSelected(CameraConfig config) {
     spdlog::info("Set height={}, ok={}", config.height, okHeight);
     spdlog::info("Set fps={}, ok={}", config.fps, okFps);
 
+    double actual_width = capture->get(cv::CAP_PROP_FRAME_WIDTH);
+    double actual_height = capture->get(cv::CAP_PROP_FRAME_HEIGHT);
+    double actual_fps = capture->get(cv::CAP_PROP_FPS);
+    spdlog::info("Actual Camera Config - Resolution: {}x{}, FPS: {}",
+        actual_width, actual_height, actual_fps);
 }
 
 
@@ -439,11 +444,11 @@ void CameraWidget::loadCameraConfigs(const std::vector<CameraConfig>& configs) {
     cameraActionGroup = new QActionGroup(this);
     cameraActionGroup->setExclusive(true);  // 互斥
 
-    for (size_t i = 0;i < configs.size(); ++i) {
+    for (std::size_t i = 0;i < configs.size(); ++i) {
         QString configText = static_cast<QString>(configs[i]);
         QAction* action = new QAction(configText, this);
         action->setCheckable(true);
-        action->setData((int)i);
+        action->setData(static_cast<int>(i));
 
         cameraActionGroup->addAction(action);
         cameraConfigMenu->addAction(action);
@@ -456,19 +461,20 @@ void CameraWidget::loadCameraConfigs(const std::vector<CameraConfig>& configs) {
     }
 }
 
-void CameraWidget::selectBestCameraConfigUI(const CameraConfig& bestConfig)
+void CameraWidget::selectBestCameraConfigUI(const CameraConfig& bestConfig) const
 {
     if (!cameraActionGroup) return;
 
     // 遍历 group 中的所有 action
-    QString bestConfigText = static_cast<QString>(bestConfig);
+    const QString bestConfigText = static_cast<QString>(bestConfig);
     for (QAction* action : cameraActionGroup->actions())
     {
         QString text = action->text();
 
         if(text == bestConfigText)
         {
-            spdlog::info("HAHHAHAHA");
+            // 打印输出选择的配置
+            spdlog::info("Selected Camera Config - {}", text.toStdString());
             action->setChecked(true); // 勾选
             break; // 找到后就退出
         }
